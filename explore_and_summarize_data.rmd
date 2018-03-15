@@ -1,4 +1,9 @@
-TITLE by YOUR_NAME_HERE
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+# Exploring White Wine Quality by Ursula Neumann
 ========================================================
 
 > **Tip**: You will see quoted sections like this throughout the template to
@@ -27,13 +32,24 @@ library(ggplot2)
 ```
 
 ```{r echo=FALSE, Load_the_Data}
-# Load the Data
-
+# Load the data
+df <- read.csv('white_wine_quality.csv', check.names = FALSE, row.names = 1)
+head(df)
 ```
 
 > **Tip**: Before you create any plots, it is a good idea to provide a short
 introduction into the dataset that you are planning to explore. Replace this
 quoted text with that general information!
+
+# Introduction
+This dataset, originally described by 
+[Cortez et al. 2009](https://www.sciencedirect.com/science/article/pii/S0167923609001377) 
+contains 4,898 white wines with 11 variables quantifying the chemical 
+properties of each wine. At least 3 wine experts rated the quality of each 
+wine, providing a rating between 0 (very bad) and 10 (very excellent).
+[This link](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt)
+describes of the variables and how the data was collected.  I am interested in
+investigating which chemical properties influence the quality of white wines.
 
 # Univariate Plots Section
 
@@ -45,8 +61,240 @@ There should be multiple code chunks and text sections; the first one below is
 just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
-
+# Determine the dimensions of the dataset
+dim(df)
 ```
+
+As expected there are 4898 white wines, with 12 columns (11 physicochemical
+properties and 1 quality rating).
+
+```{r echo=FALSE, Univariate_Plots}
+# Determine the structure of the dataset
+str(df)
+```
+
+All of the 11 physicochemical properties are of the numeric type (contains 
+decimals) while the quality values are integers. 
+
+```{r echo=FALSE, Univariate_Plots}
+# Provide a summary of the dataset
+summary(df)
+```
+
+For all variables the median and the mean are close together suggesting that 
+these parameters will not be highly skewed.  The median (5.2) and mean (6.3) of the
+residual sugar variable are the farthest apart suggesting that there may be some
+outliers on the high end (for example the max of 65.8).  It is surprising to observe 
+a fold difference of over 100 between the minimum and maximum values for residual
+sugar and free sulfur dioxide.  The alcohol content ranges from 8.0 - 14.2%. The scale 
+for quality was 1-10; however, the ratings given only range from 3-9, with a median
+rating of 6.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of fixed acidity levels
+ggplot(aes(x = fixed.acidity),
+       data = df) +
+  geom_histogram()
+```
+
+The histogram of fixed acidity appears to be normally distributed.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of volatile acidity levels
+ggplot(aes(x = volatile.acidity),
+       data = df) +
+  geom_histogram()
+```
+
+The histogram of volatile acidity is slightly knewed to the right.
+I will log10 transform this data to see if it makes the histogram
+normally distributed.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of volatile acidity levels on log10 scale
+ggplot(aes(x = volatile.acidity),
+       data = df) +
+  geom_histogram() +
+  scale_x_log10()
+```
+
+Now volatile acidity is normally distributed.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of citric acid levels
+ggplot(aes(x = citric.acid),
+       data = df) +
+  geom_histogram()
+```
+
+The bulk of the data of citric acid is normally distributed with an outlier of 
+1.66 pulling the skew to the right.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of the citric acid levels excluding the top 1%
+ggplot(aes(x = citric.acid),
+       data = df) +
+  geom_histogram() +
+  xlim(0, quantile(df$citric.acid, probs = 0.99))
+```
+
+When the top 1% of citric acid data is removed the data appear normally distributed. 
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of residual sugar levels
+ggplot(aes(x = residual.sugar),
+       data = df) +
+  geom_histogram()
+```
+
+The histogram of residual sugar is skewed to the right.  This graph has the bin
+with the highest count near the left with a wide right tail and an outlier at 65.8.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of residual sugar levels on a log10 scale
+ggplot(aes(x = residual.sugar),
+       data = df) +
+  geom_histogram() +
+  scale_x_log10()
+```
+
+Transforming the data using a log10 scale does not make the data normally
+distributed, but but rather bimodal.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of chloride levels
+ggplot(aes(x = chlorides),
+       data = df) +
+  geom_histogram()
+```
+
+The histogram of chlorides is skewed to the right with a long thin tail.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of chloride levels on a log10 scale
+ggplot(aes(x = chlorides),
+       data = df) +
+  geom_histogram() +
+  scale_x_log10()
+```
+
+Transforming the chlorides data uing log10 makes the data appear
+more normally distributed.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of free sulfur dioxide levels
+ggplot(aes(x = free.sulfur.dioxide),
+       data = df) +
+  geom_histogram()
+```
+
+The hisogram of free sulfur dioxide levels appears to be slightly skewed
+to the right with a very small and thin tail and an outlier  at 289.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of free sulfur dioxide levels excluding the top 1%
+ggplot(aes(x = free.sulfur.dioxide),
+       data = df) +
+  geom_histogram() +
+  xlim(0, quantile(df$free.sulfur.dioxide, probs = 0.99))
+```
+
+When excluding the top 1% of free sulfur dioxide levels, the data appear more
+symmetric, however, the data looks more like a pyramid instead of normally 
+distributed.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of total sulfur dioxide levels
+ggplot(aes(x = total.sulfur.dioxide),
+       data = df) +
+  geom_histogram()
+```
+
+The histogram of total sulfur dioxide generally looks normally distributed
+with an extremely thin right tail.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of density levels
+ggplot(aes(x = density),
+       data = df) +
+  geom_histogram()
+```
+
+The histogram of density appears to be normally distributed with a very
+thin right tail and an outlier at 1.039.  The majority of densities are
+close to but below 1 which makes sense given the density of water being 1
+and alcohol being less than 1.  I'm unsure what would cause a wine to have
+a density above 1.  I wanted to get a better look at the distribution by 
+excluding the top 1% of density values in the graph below, but I am unsure
+why the graph did not work.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of density levels
+ggplot(aes(x = density),
+       data = df) +
+  geom_histogram() +
+  xlim(0, quantile(df$density, probs = 0.99))
+```
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of pH levels
+ggplot(aes(x = pH),
+       data = df) +
+  geom_histogram()
+```
+
+The histogram of pH appears to be normally distributed.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of sulphate levels
+ggplot(aes(x = sulphates),
+       data = df) +
+  geom_histogram()
+```
+
+The histogram of sulphates appears to be skewed to the right.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of sulphate levels on a log10 scale
+ggplot(aes(x = sulphates),
+       data = df) +
+  geom_histogram() +
+  scale_x_log10()
+```
+
+Graphing sulphates on a log10 scale transforms the data to be normally 
+distibuted.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of alcohol levels
+ggplot(aes(x = alcohol),
+       data = df) +
+  geom_histogram()
+```
+
+The histogram of alcohol levels is skewed to the right with a wide tail.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of alcohol levels on a log10 scale
+ggplot(aes(x = alcohol),
+       data = df) +
+  geom_histogram() +
+  scale_x_log10()
+```
+
+Graphing the alcohol data on a log10 scale makes the data more symmetric 
+but does not appear truely normally distributed as the peak of the data
+is wide.
+
+```{r echo=FALSE, Univariate_Plots}
+# Plot a histogram of quality levels
+ggplot(aes(x = quality),
+       data = df) +
+  geom_histogram(binwidth = 1) +
+  scale_x_continuous(breaks = seq(3, 9, 1))
+```
+The quality rating with the highest count is 6 and is largely symmetric as 
+ratings of 3 and 9 are very low, and ratings of 0, 1, 2 and 10 are absent.
 
 > **Tip**: Make sure that you leave a blank line between the start / end of
 each code block and the end / start of your Markdown text so that it is
@@ -61,17 +309,33 @@ reflect on and summarize what you've found. Use the questions below to help you
 gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
+The dataset contains data on 4898 white wines with 12 columns 
+(11 physicochemical properties and 1 quality rating). All of the 
+11 physicochemical properties are of the numeric type (contains 
+decimals) while the quality values are integers. 
 
 ### What is/are the main feature(s) of interest in your dataset?
+I would like to investigate which physicochemical properties of the wine 
+influence the quality rating therefore the quality rating is the most 
+important feature in this data.  
 
 ### What other features in the dataset do you think will help support your \
 investigation into your feature(s) of interest?
+I will investigate all 11 properties of the wines to determine whether they
+influence quality.  Given my limited knowledge of wine and these specific
+physicochemical properties, I cannot predict which features will affect
+quality.  In addition, the univariate analyses alone does not shed light
+on which variables will be the most important therefore I will investigate
+them all in the bivariate section.
 
 ### Did you create any new variables from existing variables in the dataset?
+I have not created any new variables yet.  This may change after further 
+investigation into the bi- and multi-variate analyses.
 
 ### Of the features you investigated, were there any unusual distributions? \
 Did you perform any operations on the data to tidy, adjust, or change the form \
 of the data? If so, why did you do this?
+The data was already tidy therefore no adjustments were made.
 
 
 # Bivariate Plots Section
@@ -169,5 +433,16 @@ the insights you found. What were some of the struggles that you went through?
 What went well? What was surprising? Make sure you include an insight into
 future work that could be done with the dataset.
 
+Plotting all the histograms in the univariate plots was tedious, boring, and not 
+very informative since it is not very intuitive what all the variables themselves
+mean, or the significance of the values.
+
 > **Tip**: Don't forget to remove this, and the other **Tip** sections before
 saving your final work and knitting the final report!
+
+# Resources
+
+https://stackoverflow.com/questions/6286313/remove-an-entire-column-from-a-data-frame-in-r
+https://www.sciencedirect.com/science/article/pii/S0167923609001377
+https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt 
+https://s3.amazonaws.com/content.udacity-data.com/courses/ud651/diamondsExample_2016-05.html
