@@ -6,15 +6,6 @@ output:
 # Exploring White Wine Quality by Ursula Neumann
 ========================================================
 
-> **Tip**: You will see quoted sections like this throughout the template to
-help you construct your report. Make sure that you remove these notes before
-you finish and submit your project!
-
-> **Tip**: One of the requirements of this project is that your code follows
-good formatting techniques, including limiting your lines to 80 characters or
-less. If you're using RStudio, go into Preferences \> Code \> Display to set up
-a margin line to help you keep track of this guideline!
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 # Load all of the packages that you end up using in your analysis in this code
 # chunk.
@@ -29,17 +20,16 @@ a margin line to help you keep track of this guideline!
 # want it to. This will clean up the flow of your report.
 
 library(ggplot2)
+library(GGally)
+library(memisc)
+library(gridExtra)
 ```
 
-```{r echo=FALSE, Load_the_Data}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Load_the_Data}
 # Load the data
 df <- read.csv('white_wine_quality.csv', check.names = FALSE, row.names = 1)
 head(df)
 ```
-
-> **Tip**: Before you create any plots, it is a good idea to provide a short
-introduction into the dataset that you are planning to explore. Replace this
-quoted text with that general information!
 
 # Introduction
 This dataset, originally described by 
@@ -53,14 +43,7 @@ investigating which chemical properties influence the quality of white wines.
 
 # Univariate Plots Section
 
-> **Tip**: In this section, you should perform some preliminary exploration of
-your dataset. Run some summaries of the data and create univariate plots to
-understand the structure of the individual variables in your dataset. Don't
-forget to add a comment after each plot or closely-related group of plots!
-There should be multiple code chunks and text sections; the first one below is
-just to help you get started.
-
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Dimensions}
 # Determine the dimensions of the dataset
 dim(df)
 ```
@@ -68,7 +51,7 @@ dim(df)
 As expected there are 4898 white wines, with 12 columns (11 physicochemical
 properties and 1 quality rating).
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Structure}
 # Determine the structure of the dataset
 str(df)
 ```
@@ -76,21 +59,21 @@ str(df)
 All of the 11 physicochemical properties are of the numeric type (contains 
 decimals) while the quality values are integers. 
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Summary}
 # Provide a summary of the dataset
 summary(df)
 ```
 
 For all variables the median and the mean are close together suggesting that 
-these parameters will not be highly skewed.  The median (5.2) and mean (6.3) of the
-residual sugar variable are the farthest apart suggesting that there may be some
-outliers on the high end (for example the max of 65.8).  It is surprising to observe 
-a fold difference of over 100 between the minimum and maximum values for residual
-sugar and free sulfur dioxide.  The alcohol content ranges from 8.0 - 14.2%. The scale 
-for quality was 1-10; however, the ratings given only range from 3-9, with a median
-rating of 6.
+these parameters will not be highly skewed.  The median (5.2) and mean (6.3) of 
+the residual sugar variable are the farthest apart suggesting that there may be 
+some outliers on the high end (for example the max of 65.8).  It is surprising 
+to observe a fold difference of over 100 between the minimum and maximum values 
+for residual sugar and free sulfur dioxide.  The alcohol content ranges from 
+8.0 - 14.2%. The scale for quality was 1-10; however, the ratings given only 
+range from 3-9, with a median rating of 6.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Fixed_Acidity}
 # Plot a histogram of fixed acidity levels
 ggplot(aes(x = fixed.acidity),
        data = df) +
@@ -99,18 +82,18 @@ ggplot(aes(x = fixed.acidity),
 
 The histogram of fixed acidity appears to be normally distributed.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Volative_Acidity}
 # Plot a histogram of volatile acidity levels
 ggplot(aes(x = volatile.acidity),
        data = df) +
   geom_histogram()
 ```
 
-The histogram of volatile acidity is slightly knewed to the right.
+The histogram of volatile acidity is slightly skewed to the right.
 I will log10 transform this data to see if it makes the histogram
 normally distributed.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Volative_Acidity_Log}
 # Plot a histogram of volatile acidity levels on log10 scale
 ggplot(aes(x = volatile.acidity),
        data = df) +
@@ -120,7 +103,7 @@ ggplot(aes(x = volatile.acidity),
 
 Now volatile acidity is normally distributed.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Citric_Acid}
 # Plot a histogram of citric acid levels
 ggplot(aes(x = citric.acid),
        data = df) +
@@ -130,7 +113,7 @@ ggplot(aes(x = citric.acid),
 The bulk of the data of citric acid is normally distributed with an outlier of 
 1.66 pulling the skew to the right.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Citric_Acid_0.99}
 # Plot a histogram of the citric acid levels excluding the top 1%
 ggplot(aes(x = citric.acid),
        data = df) +
@@ -138,9 +121,10 @@ ggplot(aes(x = citric.acid),
   xlim(0, quantile(df$citric.acid, probs = 0.99))
 ```
 
-When the top 1% of citric acid data is removed the data appear normally distributed. 
+When the top 1% of citric acid data is removed the data appear normally 
+distributed. 
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Residual_Sugar}
 # Plot a histogram of residual sugar levels
 ggplot(aes(x = residual.sugar),
        data = df) +
@@ -148,9 +132,10 @@ ggplot(aes(x = residual.sugar),
 ```
 
 The histogram of residual sugar is skewed to the right.  This graph has the bin
-with the highest count near the left with a wide right tail and an outlier at 65.8.
+with the highest count near the left with a wide right tail and an outlier at 
+65.8.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Residual_Sugar_Log}
 # Plot a histogram of residual sugar levels on a log10 scale
 ggplot(aes(x = residual.sugar),
        data = df) +
@@ -159,9 +144,9 @@ ggplot(aes(x = residual.sugar),
 ```
 
 Transforming the data using a log10 scale does not make the data normally
-distributed, but but rather bimodal.
+distributed, but bimodal.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Chlorides}
 # Plot a histogram of chloride levels
 ggplot(aes(x = chlorides),
        data = df) +
@@ -170,7 +155,7 @@ ggplot(aes(x = chlorides),
 
 The histogram of chlorides is skewed to the right with a long thin tail.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Chlorides_Log}
 # Plot a histogram of chloride levels on a log10 scale
 ggplot(aes(x = chlorides),
        data = df) +
@@ -178,20 +163,20 @@ ggplot(aes(x = chlorides),
   scale_x_log10()
 ```
 
-Transforming the chlorides data uing log10 makes the data appear
+Transforming the chlorides data using log10 makes the data appear
 more normally distributed.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Free_Sulfur_Dioxide}
 # Plot a histogram of free sulfur dioxide levels
 ggplot(aes(x = free.sulfur.dioxide),
        data = df) +
   geom_histogram()
 ```
 
-The hisogram of free sulfur dioxide levels appears to be slightly skewed
-to the right with a very small and thin tail and an outlier  at 289.
+The histogram of free sulfur dioxide levels appears to be slightly skewed
+to the right with a very small and thin tail and an outlier at 289.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Free_Sulfur_Dioxide_2}
 # Plot a histogram of free sulfur dioxide levels excluding the top 1%
 ggplot(aes(x = free.sulfur.dioxide),
        data = df) +
@@ -203,7 +188,7 @@ When excluding the top 1% of free sulfur dioxide levels, the data appear more
 symmetric, however, the data looks more like a pyramid instead of normally 
 distributed.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Total_Sulfur_Dioxide}
 # Plot a histogram of total sulfur dioxide levels
 ggplot(aes(x = total.sulfur.dioxide),
        data = df) +
@@ -213,30 +198,19 @@ ggplot(aes(x = total.sulfur.dioxide),
 The histogram of total sulfur dioxide generally looks normally distributed
 with an extremely thin right tail.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Density}
 # Plot a histogram of density levels
 ggplot(aes(x = density),
        data = df) +
   geom_histogram()
 ```
 
-The histogram of density appears to be normally distributed with a very
-thin right tail and an outlier at 1.039.  The majority of densities are
-close to but below 1 which makes sense given the density of water being 1
-and alcohol being less than 1.  I'm unsure what would cause a wine to have
-a density above 1.  I wanted to get a better look at the distribution by 
-excluding the top 1% of density values in the graph below, but I am unsure
-why the graph did not work.
+The histogram of density appears to be normally distributed with a very thin 
+right tail and an outlier at 1.039.  The majority of densities are close to, but
+below, 1 which makes sense given the density of water being 1 and alcohol being 
+less than 1.  I'm unsure what would cause a wine to have a density above 1.
 
-```{r echo=FALSE, Univariate_Plots}
-# Plot a histogram of density levels
-ggplot(aes(x = density),
-       data = df) +
-  geom_histogram() +
-  xlim(0, quantile(df$density, probs = 0.99))
-```
-
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_pH}
 # Plot a histogram of pH levels
 ggplot(aes(x = pH),
        data = df) +
@@ -245,7 +219,7 @@ ggplot(aes(x = pH),
 
 The histogram of pH appears to be normally distributed.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Sulphates}
 # Plot a histogram of sulphate levels
 ggplot(aes(x = sulphates),
        data = df) +
@@ -254,7 +228,7 @@ ggplot(aes(x = sulphates),
 
 The histogram of sulphates appears to be skewed to the right.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Sulphates_Log}
 # Plot a histogram of sulphate levels on a log10 scale
 ggplot(aes(x = sulphates),
        data = df) +
@@ -263,9 +237,9 @@ ggplot(aes(x = sulphates),
 ```
 
 Graphing sulphates on a log10 scale transforms the data to be normally 
-distibuted.
+distributed.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Alcohol}
 # Plot a histogram of alcohol levels
 ggplot(aes(x = alcohol),
        data = df) +
@@ -274,7 +248,7 @@ ggplot(aes(x = alcohol),
 
 The histogram of alcohol levels is skewed to the right with a wide tail.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Alcohol_Log}
 # Plot a histogram of alcohol levels on a log10 scale
 ggplot(aes(x = alcohol),
        data = df) +
@@ -282,31 +256,22 @@ ggplot(aes(x = alcohol),
   scale_x_log10()
 ```
 
-Graphing the alcohol data on a log10 scale makes the data more symmetric 
-but does not appear truely normally distributed as the peak of the data
-is wide.
+Graphing the alcohol data on a log10 scale makes the data more symmetric but 
+does not appear normally distributed as the peak of the data is wide.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Histogram_Quality}
 # Plot a histogram of quality levels
 ggplot(aes(x = quality),
        data = df) +
   geom_histogram(binwidth = 1) +
   scale_x_continuous(breaks = seq(3, 9, 1))
 ```
-The quality rating with the highest count is 6 and is largely symmetric as 
-ratings of 3 and 9 are very low, and ratings of 0, 1, 2 and 10 are absent.
 
-> **Tip**: Make sure that you leave a blank line between the start / end of
-each code block and the end / start of your Markdown text so that it is
-formatted nicely in the knitted text. Note as well that text on consecutive
-lines is treated as a single space. Make sure you have a blank line between
-your paragraphs so that they too are formatted for easy readability.
+The quality rating with the highest count is 6 and the data are largely 
+symmetric as the ratings for 5 and 7 are slightly lower, 4 and 8 are even lower,
+3 and 9 are very low, and 0, 1, 2 and 10 are absent.
 
 # Univariate Analysis
-
-> **Tip**: Now that you've completed your univariate explorations, it's time to
-reflect on and summarize what you've found. Use the questions below to help you
-gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
 The dataset contains data on 4898 white wines with 12 columns 
@@ -316,7 +281,7 @@ decimals) while the quality values are integers.
 
 ### What is/are the main feature(s) of interest in your dataset?
 I would like to investigate which physicochemical properties of the wine 
-influence the quality rating therefore the quality rating is the most 
+influence the quality rating; therefore, the quality rating is the most 
 important feature in this data.  
 
 ### What other features in the dataset do you think will help support your \
@@ -340,105 +305,587 @@ The data was already tidy therefore no adjustments were made.
 
 # Bivariate Plots Section
 
-> **Tip**: Based on what you saw in the univariate plots, what relationships
-between variables might be interesting to look at in this section? Don't limit
-yourself to relationships between a main output feature and one of the
-supporting variables. Try to look at relationships between supporting variables
-as well.
-
-```{r echo=FALSE, Bivariate_Plots}
-
+```{r echo=FALSE, message=FALSE, warning=FALSE, Scatterplot_Matrix}
+# Create a scatterplot matrix to investigate relationships between variables
+ggpairs(data=df, size=0.5)
 ```
 
-# Bivariate Analysis
+Although I am most interested in determining if any of these physicochemical
+properties influence quality, we will investigate all relationships first to
+better understand the data.  I will report on correlations that are equal to 
+or greater than |0.3| when rounded to 1 decimal point with correlations between 
+|0.3| and |0.7| to be considered moderate and above |0.7| to be strong.
 
-> **Tip**: As before, summarize what you found in your bivariate explorations
-here. Use the questions below to guide your discussion.
+fixed acidity vs citric acid 0.3
+fixed acidity vs pH -0.4
+
+free sulfur dioxide vs residual sugar 0.3
+free sulfur dioxide vs total sulfur dioxide 0.6
+
+density vs fixed acidity 0.3
+density vs residual sugar 0.8
+density vs chlorides 0.3
+density vs free sulfur dioxide 0.3
+density vs total sulfur dioxide 0.5
+
+alcohol vs density -0.8
+alcohol vs residual sugar -0.5
+alcohol vs chlorides -0.4
+alcohol vs free sulfur dioxide -0.3
+alcohol vs total sulfur dioxide -0.5
+
+quality vs alcohol 0.4
+quality vs density -0.3
+
+It is logical that fixed acidity would be positively correlated to citric acid 
+and negatively correlated to pH given each that each parameter is related to 
+acidity.
+
+As expected free and total sulfur dioxide levels are strongly positively 
+correlated to one another since total levels are equal to free levels + bound 
+levels of sulfur dioxide.
+
+Interestingly density and alcohol were correlated to many other parameters.
+It makes sense that density would increase with increasing solutes (residual 
+sugar, chlorides, etc.) but I'm assuming that because density decreases with 
+increasing alcohol levels (given the density of alcohol vs water) this explains 
+why alcohol is therefore negatively correlated to these solutes as well.
+
+The only parameters that are related to quality are alcohol (which are
+moderately positive correlated), and density (which are moderately negative
+correlated).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Scatterplot_Alcohol_Quality}
+# Plot a scatterplot of quality vs alcohol
+ggplot(aes(x = alcohol,
+           y = quality),
+       data = df) +
+  geom_point(alpha = 1/10) +
+  stat_smooth(method = 'lm')
+```
+
+Graphing the data with quality on a continuous scale I am able to add a linear 
+fit line through the data showing that as alcohol levels increase, quality 
+levels increase. However, despite the transparency of the points, it is 
+difficult to visualize the extent of the overlap between each quality group.
+Therefore, I have graphed same data using jittering to see more points, as well 
+as see the 5 point summary in a boxplot as shown below.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Boxplot_Alcohol_Quality}
+# Add a column for quality as a decrete variable to use in a boxplot
+df$quality.descrete <- cut(df$quality, seq(0,10,1), labels=c(1:10))
+head(df)
+
+# Plot a boxplot of alcohol and quality
+p1 <- ggplot(aes(x = quality.descrete,
+           y = alcohol),
+       data = df) +
+  geom_jitter(aes(color = quality.descrete))
+
+p2 <- ggplot(aes(x = quality.descrete,
+           y = alcohol),
+       data = df) +
+  geom_boxplot(aes(color = quality.descrete))
+
+
+grid.arrange(p1, p2, nrow = 1)
+```
+
+In the graph on the left we can see that the majority of the data falls in
+quality rating 5, 6 and 7, less data falls in a rating of 4 and 8, even less so 
+in the rating of 3, and only five points in a rating of 9.  There is a great 
+deal of overlap between each sequential rating.
+
+Interestingly, in the graph on the right, it looks like the alcohol rating
+tends to decrease from a quality rating of 3 to 5, and increases from 5 to 9.
+The group with the least variability is the quality rating of 9 where 80% of
+the points are clustered together at a high alcohol rating.  However, there is  
+a very low N (only 5 observations in this category), and variability may 
+increase with more observations.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Scatterplot_Density_Quality}
+# Plot a scatterplot of quality vs density levels
+ggplot(aes(x = density,
+           y = quality),
+       data = df) +
+  geom_point() 
+```
+
+It looks like the 2 outliers with a density above 1.01 are making it more
+difficult to view the bulk of the data.  I will exclude these points and graph 
+the plot again.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Scatterplot_Density_Quality2}
+# Plot a scatterplot of quality vs density levels excluding 2 outliers
+ggplot(aes(x = density,
+           y = quality),
+       data = subset(df, df$density < 1.01)) +
+  geom_point(alpha = 0.1) +
+  stat_smooth(method = 'lm') 
+```
+
+Applying the linear model line on the data we can see that with increasing 
+density there is a decrease in quality.  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Boxplot_Density_Quality}
+# Plot a boxplot of density and quality
+p3 <- ggplot(aes(x = quality.descrete,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_jitter(aes(color = quality.descrete))
+
+p4 <- ggplot(aes(x = quality.descrete,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_boxplot(aes(color = quality.descrete))
+
+
+grid.arrange(p3, p4, nrow = 1)
+```
+
+Similar to the alcohol vs quality plots, the density vs quality plots also 
+exhibit significant overlap between the quality groups. Because density and 
+alcohol are related (increased alcohol leads to decreased density), again we 
+observe the least variability in the group with a quality rating of 9 where 80% 
+of the points are clustered together at a low density level.  
+
+So far it does not appear that either alcohol or density (or anything else) are 
+strong indicators of quality.  Therefore, to investigate the strongest 
+correlation observed I will graph density vs alcohol. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Scatterplot_Alcohol_Density}
+# Plot a scatterplot of quality vs density levels excluding 2 outliers
+ggplot(aes(x = alcohol,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_point() +
+  stat_smooth(method = 'lm') 
+```
+
+This indeed is a stronger relationship.  Again this is not surprising given
+that alcohol is less dense than water.  However, I anticipate that predicting
+density (rather than qulity) will end up being more fruitful using predictive
+models, albeit potentially less interesting.
+
+# Bivariate Analysis
 
 ### Talk about some of the relationships you observed in this part of the \
 investigation. How did the feature(s) of interest vary with other features in \
 the dataset?
 
+Using the scatterplot matrix I was able to quickly observe the correlations
+between all variables.  It was not surprising that fixed acidity was positively 
+correlated to citric acid and negatively correlated to pH given each that each 
+parameter is related to acidity.  In addition, free and total sulfur dioxide 
+levels are strongly positively correlated to one another since total levels are 
+equal to free levels + bound levels of sulfur dioxide.
+
+Unfortunately, alcohol and density were only weakly to moderately correlated to 
+quality (0.4 and -0.3 respectively), and therefore I do not anticipate that the 
+predictive model I will generate in the next section will be very accurate.
+
 ### Did you observe any interesting relationships between the other features \
 (not the main feature(s) of interest)?
+What was more interesting to me was the relationship between density and 
+alcohol, as well as the relationship between each of these parameters to fixed 
+acidity, residual sugar, chlorides, and total sulfur dioxide levels. I 
+anticipate that the predictive model generated for predicting density will be 
+more accurate than the one predicting quality.
 
 ### What was the strongest relationship you found?
+The strongest relationships found were density vs residual sugar (0.8) and 
+density vs alcohol (-0.8).
 
 
 # Multivariate Plots Section
 
-> **Tip**: Now it's time to put everything together. Based on what you found in
-the bivariate plots section, create a few multivariate plots to investigate
-more complex interactions between variables. Make sure that the plots that you
-create here are justified by the plots you explored in the previous section. If
-you plan on creating any mathematical models, this is the section where you
-will do that.
+I am first going to attempt to make a predictive model for quality.  Quality was 
+most strongly correlated to alcohol and I would like to see if any other 
+variables help explain the variability seen in the quality vs alcohol graph.
 
-```{r echo=FALSE, Multivariate_Plots}
-
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Bucket}
+# Create a new column bucketing the density levels into Low, Medium, and High
+df$density.bucket <- cut(df$density, 
+                         breaks = c(-Inf, 0.9925, 0.995, Inf),
+                         labels = c("Low", "Medium", "High"))
+summary(df$density.bucket)
 ```
+
+For all instances of me dividing up variables into 3 roughly equal-sized 
+groups, I chose the values manually as I was curious to play around with the 
+numbers; however, I believe there is also a easy to cut them into 3 equal groups 
+automatically.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Alcohol_Density}
+# Plot a scatterplot of quality vs alcohol colored by density levels
+ggplot(aes(x = alcohol,
+           y = quality),
+       data = subset(df, df$density < 1.01)) +
+  geom_point(aes(color = density.bucket)) +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  stat_smooth(method = 'lm')
+```
+
+Density appears to be more correlated to alcohol levels alone, opposed to 
+explaining the variability in this graph. Next, I will look at the residual 
+sugar level, which was highly correlated to density (which was moderately 
+correlated to quality).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Residual_Sugar__Bucket}
+# Create a new column bucketing the residual sugar levels
+df$residual.sugar.bucket <- cut(df$residual.sugar, 
+                         breaks = c(-Inf, 2, 8, Inf),
+                         labels = c("Low", "Medium", "High"))
+summary(df$residual.sugar.bucket)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Alcohol_Residual_Sugar}
+# Plot a scatterplot of quality vs alcohol colored by residual sugar levels
+ggplot(aes(x = alcohol,
+           y = quality),
+       data = subset(df, df$density < 1.01)) +
+  geom_point(aes(color = residual.sugar.bucket)) +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  geom_smooth(method = 'lm')
+```
+
+The different colored points (varied residual sugar levels) appear to be equally
+distributed throughout the plot and therefore likely do not explain the 
+variability observed.
+
+For curiosity's sake I will generate a predictive model incorporating alcohol 
+first, then adding on other variables to see their effect on the R-squared value
+of the model.  However, I anticipate that the model will be very poor.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Predictive_Model_Quality}
+# Create a linear predictive model for quality
+m1 <- lm(I(quality) ~ I(alcohol), data = df)
+m2 <- update(m1, ~ . + density)
+m3 <- update(m1, ~ . + residual.sugar)
+m4 <- update(m1, ~ . + chlorides)
+m5 <- update(m2, ~ . + residual.sugar)
+m6 <- update(m5, ~ . + chlorides)
+mtable(m1, m2, m3, m4, m5, m6)
+```
+
+m1 using alcohol alone as a predicter elicited a R-squared value of only 0.190.
+Adding on density, residual sugar, and chlorides alone increased the R-squared 
+value minutely.  m6 using all of these parameters had the highest R-squared 
+value of 0.212 which is still a very poor model.  Again, out of curiosity I 
+wanted to determine how large the 95% confidence intervals would be when 
+predicting a wine with the median value for all variables, as well as a wine 
+with a quality rating of 9.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Estimite_1}
+# Predict quality of a wine with median levels of each property
+MedianWine <- data.frame(alcohol = 10.4, 
+                      density = 0.9937,
+                      residual.sugar = 5.2, 
+                      chlorides = 0.043)
+modelEstimate1 <- predict(m6, newdata = MedianWine,
+                        interval="prediction", level = .95)
+modelEstimate1
+```
+
+For the median wine which would have a rating of ~6, the estimate of 5.8 is not 
+that far off.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Highest_Rated_Wines_1}
+# Display the properties of the highest rated wines
+head(subset(df, df$quality == 9))
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Estimite_2}
+# Predict the quality of wine #775 which was rated to have a quality of 9
+HighestRatedWine <- data.frame(alcohol = 10.4, 
+                      density = 0.9970,
+                      residual.sugar = 10.6, 
+                      chlorides = 0.035)
+modelEstimate2 <- predict(m6, newdata = HighestRatedWine,
+                        interval="prediction", level = .95)
+modelEstimate2
+```
+
+When qualities of a highly rated (quality 9) wine are inputted into the model, 
+the estimate is identical to before, a value of only 5.8 and a value of 9 did
+not fall within the 95% confidence interval.  I expect for any parameters that 
+are inputted into the model, it will predict the same quality and thus is a very
+poor model.
+
+Moving away from quality, would like to try and predict the density of wine 
+based on the alcohol levels, as well as additional parameters starting with 
+residual sugar.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Residual_Sugar}
+# Plot a scatterplot of density vs alcohol colored by residual sugar levels
+ggplot(aes(x = alcohol,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_point(aes(color = residual.sugar.bucket)) +
+  stat_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+```
+
+Residual sugar appears to explain some of the variability in the density vs 
+alcohol graph since the points above the linear line of best fit have the 
+highest sugar levels, and the observations below the line contain the lowest 
+sugar levels. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Chlorides_Bucket}
+# Create a new column bucketing the chlorides levels
+df$chlorides.bucket <- cut(df$chlorides, 
+                         breaks = c(0, 0.038, 0.048, Inf),
+                         labels = c("Low", "Medium", "High"))
+summary(df$chlorides.bucket)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Chlorides}
+# Plot a scatterplot of density vs alcohol colored by chloride levels
+ggplot(aes(x = alcohol,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_point(aes(color = chlorides.bucket)) +
+  stat_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+```
+
+Chlorides do not seem to explain the variability in the density vs alcohol plot 
+since the color shift seems to be more related to alcohol levels alone.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Free_Sulfur_Dioxide_Bucket}
+# Create a new column bucketing the free sulfur dioxide levels
+df$free.sulfur.dioxide.bucket <- cut(df$free.sulfur.dioxide, 
+                         breaks = c(0, 25, 40, Inf),
+                         labels = c("Low", "Medium", "High"))
+summary(df$free.sulfur.dioxide.bucket)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Free_Sul_Diox}
+# Plot a scatterplot of density vs alcohol colored by free sulfur dioxide levels
+ggplot(aes(x = alcohol,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_point(aes(color = free.sulfur.dioxide.bucket)) +
+  stat_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+```
+
+I do not observe any pattern when bucketing by free sulfur dioxide levels.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Total_Sulfur_Dioxide_Bucket}
+# Create a new column bucketing the total sulfur dioxide levels
+df$total.sulfur.dioxide.bucket <- cut(df$total.sulfur.dioxide, 
+                         breaks = c(0, 115, 155, Inf),
+                         labels = c("Low", "Medium", "High"))
+summary(df$total.sulfur.dioxide.bucket)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Total_Sul_Diox}
+# Plot a scatterplot of density vs alcohol colored by total sulfur dioxide
+ggplot(aes(x = alcohol,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_point(aes(color = total.sulfur.dioxide.bucket)) +
+  stat_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+```
+
+It is difficult to say whether total sulfur dioxide levels explain the 
+variability in the density vs alcohol plot. There is a cluster of "high" points 
+on the top left above the linear line of best fit, however, the "low" points 
+seem to congregate at higher alcohol levels both below and above the linear 
+line.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Fixed_Acidity_Bucket}
+# Create a new column bucketing the fixed acidity levels
+df$fixed.acidity.bucket <- cut(df$fixed.acidity, 
+                         breaks = c(0, 6.4, 7, Inf),
+                         labels = c("Low", "Medium", "High"))
+summary(df$fixed.acidity.bucket)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Fixed_Acidity}
+# Plot a scatterplot of density vs alcohol colored by fixed acidity levels
+ggplot(aes(x = alcohol,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_point(aes(color = fixed.acidity.bucket)) +
+  stat_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+```
+
+Fixed acidity levels may explain some of the variability in the plot of density 
+vs alcohol since the highest points at any given alcohol level tend to be darker
+(higher fixed acidity) while the lowest points tend to be the lightest (lowest 
+fixed acidity).
+
+Next I will generate a predictive model of density.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Predictive_Model_Density}
+# Create a linear predictive model for density
+m1 <- lm(I(density) ~ I(alcohol), data = df)
+m2 <- update(m1, ~ . + residual.sugar)
+m3 <- update(m2, ~ . + fixed.acidity)
+m4 <- update(m3, ~ . + chlorides)
+m5 <- update(m4, ~ . + free.sulfur.dioxide)
+m6 <- update(m5, ~ . + total.sulfur.dioxide)
+mtable(m1, m2, m3, m4, m5, m6)
+
+# After running the models above it seems like alcohol, residual sugar, fixed 
+# acidity, and total sulfur dioxide levels will best predict density levels 
+# (since chlorides and free sulfur dioxide levels did not increase the R-squared
+# value)
+m7 <- update(m3, ~ . + total.sulfur.dioxide)
+mtable(m1, m2, m3, m4, m5, m6, m7)
+```
+
+Alcohol as a single variable produced an R-squared value of 0.609 when
+explaining the density levels.  Adding residual sugar, fixed acidity, and total 
+sulfur dioxide levels into the equation increased the R-squared value to 0.907, 
+0.930, and 0.933 respectively.  There may be parameters that were not measured 
+the explain the remainder of the variability in density levels.  This R-squared 
+value is much higher than the predictive model for quality, and I anticipate 
+that it will be able to accurately predict density levels which is tested below.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Highest_Rated_Wines_2}
+# Display the properties of the highest rated wines
+head(subset(df, df$quality == 9))
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Estimate}
+# Predict the density of wine #821 (actual density is 0.997)
+Wine821 <- data.frame(alcohol = 12.4, 
+                      residual.sugar = 1.6,
+                      fixed.acidity = 6.6, 
+                      total.sulfur.dioxide = 85)
+modelEstimate3 <- predict(m7, newdata = Wine821,
+                        interval="prediction", level = .95)
+modelEstimate3
+```
+
+Surprisingly despite the R-squared value of 0.933, the true density of the
+wine (0.997) didn't land within the 95% confidence interval.  Perhaps I put too 
+much hope in this model because the R-squared value was so much higher than that
+of the model predicting quality, but the R-squared value may need to be closer 
+to 1 to better predict density.
 
 # Multivariate Analysis
 
 ### Talk about some of the relationships you observed in this part of the \
 investigation. Were there features that strengthened each other in terms of \
 looking at your feature(s) of interest?
+For the multivariate analysis of quality, I did not find anything useful beyond 
+alcohol and density that could explain quality levels, and this resulted in a 
+very poor predictive model.  Interestingly, I found that a combination of 
+alcohol and residual sugar levels can largely explain density levels (and fixed 
+acidity and total sulfur dioxide levels help the prediction slightly more.)
 
 ### Were there any interesting or surprising interactions between features?
+See above.
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the \
-strengths and limitations of your model.
+The predictive model of quality was poor.  None of the individual parameters
+were strongly correlated to quality, and no combination that I tested added to 
+the quality of the prediction. 
+
+The predictive model for density was much better than quality with an R-squared 
+value of 0.933, however this was still unable to predict the density of a wine 
+within the 95% confidence interval.  There must be other parameters that explain
+density that were not included in this dataset. 
 
 ------
 
 # Final Plots and Summary
 
-> **Tip**: You've done a lot of exploration and have built up an understanding
-of the structure of and relationships between the variables in your dataset.
-Here, you will select three plots from all of your previous exploration to
-present here as a summary of some of your most interesting findings. Make sure
-that you have refined your selected plots for good titling, axis labels (with
-units), and good aesthetic choices (e.g. color, transparency). After each plot,
-make sure you justify why you chose each plot by describing what it shows.
-
 ### Plot One
-```{r echo=FALSE, Plot_One}
-
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
+# Plot a scatterplot of quality vs alcohol
+ggplot(aes(x = alcohol,
+           y = quality),
+       data = df) +
+  geom_point(alpha = 1/10) +
+  stat_smooth(method = 'lm') +
+  ggtitle('Quality Increases as Alcohol Levels Increase') +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Alcohol Level (% by volume)") +
+  ylab("Quality Rating")
 ```
 
 ### Description One
-
+Firstly, I wanted variety in the appearance of my final plots so I chose this 
+one even though it may be unusual to graph a scatterplot when the quality 
+ratings are descrete.  I thought this graph was important because it represents 
+the strongest correlation between any variable and quality which ended up being 
+alcohol.
 
 ### Plot Two
-```{r echo=FALSE, Plot_Two}
-
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Two}
+ggplot(aes(x = quality.descrete,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_boxplot(aes(color = quality.descrete)) +
+  ggtitle('Density Decreases as Quality Increases') +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Quality Rating") +
+  ylab(expression(paste("Density (g/cm"^3, ")"))) + 
+  theme(legend.position="none")
 ```
 
 ### Description Two
-
+I chose this graph as it was a different way to represent the type of data shown
+in Plot 1.  The boxplot allows you to glean information such as the 5 number 
+summary, outliers, overlap between groups, and trends across quality ratings.  
 
 ### Plot Three
-```{r echo=FALSE, Plot_Three}
-
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
+# Plot a scatterplot of density vs alcohol colored by residual sugar levels
+ggplot(aes(x = alcohol,
+           y = density),
+       data = subset(df, df$density < 1.01)) +
+  geom_point(aes(color = residual.sugar.bucket)) +
+  stat_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  ggtitle('Residual Sugar Explains Variability of Density vs Alcohol Plot') +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(x="Alcohol Level (% by volume)", 
+       y=expression(paste("Density (g/cm"^3, ")")), 
+       col="Residual Sugar Level")
 ```
 
 ### Description Three
+The strongest relationships found were between density vs alcohol (-0.8) and 
+density vs residual sugar (0.8) and this multivariate plot was able to display 
+all three variables at once.  It appears that residual sugar levels explain some
+of the variability in the density vs alcohol plot, and alcohol and residual 
+sugar alone were able to predict density levels with an R-squared value of 
+0.907.
 
 ------
 
 # Reflection
 
-> **Tip**: Here's the final step! Reflect on the exploration you performed and
-the insights you found. What were some of the struggles that you went through?
-What went well? What was surprising? Make sure you include an insight into
-future work that could be done with the dataset.
+I found that plotting all the histograms in the univariate plots was tedious, 
+boring, and not very informative since it is not intuitive what all the 
+variables mean, or the significance of the values.  
 
-Plotting all the histograms in the univariate plots was tedious, boring, and not 
-very informative since it is not very intuitive what all the variables themselves
-mean, or the significance of the values.
+I was disappointed that I wasn't able to find anything that strongly correlated
+with the quality of wine, and that the predictive model was so poor. For 
+something like the diamonds dataset, it is more intuitive that you'd be able
+to predict the price of a diamond - generally, the bigger, the better.  However, 
+with wine, quality can be quite subjective, especially for an expert vs a 
+non-expert. Some people love sweet and some people hate it.  Some people may be 
+turned off if the alcohol taste is too strong. Some experts might be swayed by 
+hints of flavors and depth of taste while I just hope the wine doesn't taste 
+like cleaner.  
 
-> **Tip**: Don't forget to remove this, and the other **Tip** sections before
-saving your final work and knitting the final report!
+After doing a more in-depth investigation into what dictates density I was a 
+little more excited and willing to complete this project.  Although it is 
+obvious that alcohol levels and solutes will affect density, it was fun to play 
+with the predictions using the linear models.
+
+For future analysis, I think it would be interesting if use more complicated 
+modelling techniques to create more accurate predictive models such as those 
+used in this [R Pubs post](http://www.rpubs.com/datascientiest/237448).
 
 # Resources
 
@@ -446,3 +893,7 @@ https://stackoverflow.com/questions/6286313/remove-an-entire-column-from-a-data-
 https://www.sciencedirect.com/science/article/pii/S0167923609001377
 https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt 
 https://s3.amazonaws.com/content.udacity-data.com/courses/ud651/diamondsExample_2016-05.html
+http://colorbrewer2.org/#type=sequential&scheme=Blues&n=7
+https://stackoverflow.com/questions/40675778/center-plot-title-in-ggplot2 
+https://stackoverflow.com/questions/35618260/removing-legend-ggplot-2-2
+http://www.rpubs.com/datascientiest/237448
