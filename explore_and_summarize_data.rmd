@@ -305,9 +305,18 @@ The data was already tidy therefore no adjustments were made.
 
 # Bivariate Plots Section
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Scatterplot_Matrix}
+```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE, SM}
 # Create a scatterplot matrix to investigate relationships between variables
-ggpairs(data=df, size=0.5)
+matrixlabels = gsub("\\.", "\n", colnames(df))
+
+ggpairs(data=df, 
+        columnLabels = matrixlabels,
+        lower = list(continuous = wrap("points", 
+                                       alpha = 0.1,
+                                       size=0.5))) +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text.x = element_text(size = 8, angle = -90))
 ```
 
 Although I am most interested in determining if any of these physicochemical
@@ -316,26 +325,26 @@ better understand the data.  I will report on correlations that are equal to
 or greater than |0.3| when rounded to 1 decimal point with correlations between 
 |0.3| and |0.7| to be considered moderate and above |0.7| to be strong.
 
-fixed acidity vs citric acid 0.3
-fixed acidity vs pH -0.4
+* fixed acidity vs citric acid 0.3
+* fixed acidity vs pH -0.4
 
-free sulfur dioxide vs residual sugar 0.3
-free sulfur dioxide vs total sulfur dioxide 0.6
+* free sulfur dioxide vs residual sugar 0.3
+* free sulfur dioxide vs total sulfur dioxide 0.6
 
-density vs fixed acidity 0.3
-density vs residual sugar 0.8
-density vs chlorides 0.3
-density vs free sulfur dioxide 0.3
-density vs total sulfur dioxide 0.5
+* density vs fixed acidity 0.3
+* density vs residual sugar 0.8
+* density vs chlorides 0.3
+* density vs free sulfur dioxide 0.3
+* density vs total sulfur dioxide 0.5
 
-alcohol vs density -0.8
-alcohol vs residual sugar -0.5
-alcohol vs chlorides -0.4
-alcohol vs free sulfur dioxide -0.3
-alcohol vs total sulfur dioxide -0.5
+* alcohol vs density -0.8
+* alcohol vs residual sugar -0.5
+* alcohol vs chlorides -0.4
+* alcohol vs free sulfur dioxide -0.3
+* alcohol vs total sulfur dioxide -0.5
 
-quality vs alcohol 0.4
-quality vs density -0.3
+* quality vs alcohol 0.4
+* quality vs density -0.3
 
 It is logical that fixed acidity would be positively correlated to citric acid 
 and negatively correlated to pH given each that each parameter is related to 
@@ -355,37 +364,20 @@ The only parameters that are related to quality are alcohol (which are
 moderately positive correlated), and density (which are moderately negative
 correlated).
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Scatterplot_Alcohol_Quality}
-# Plot a scatterplot of quality vs alcohol
-ggplot(aes(x = alcohol,
-           y = quality),
-       data = df) +
-  geom_point(alpha = 1/10) +
-  stat_smooth(method = 'lm')
-```
-
-Graphing the data with quality on a continuous scale I am able to add a linear 
-fit line through the data showing that as alcohol levels increase, quality 
-levels increase. However, despite the transparency of the points, it is 
-difficult to visualize the extent of the overlap between each quality group.
-Therefore, I have graphed same data using jittering to see more points, as well 
-as see the 5 point summary in a boxplot as shown below.
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, Boxplot_Alcohol_Quality}
-# Add a column for quality as a decrete variable to use in a boxplot
-df$quality.descrete <- cut(df$quality, seq(0,10,1), labels=c(1:10))
-head(df)
+```{r echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, Box_Alc_Qual}
+# Add a column for quality as a discrete variable to use in a boxplot
+df$quality.discrete <- cut(df$quality, seq(0,10,1), labels=c(1:10))
 
 # Plot a boxplot of alcohol and quality
-p1 <- ggplot(aes(x = quality.descrete,
+p1 <- ggplot(aes(x = quality.discrete,
            y = alcohol),
        data = df) +
-  geom_jitter(aes(color = quality.descrete))
+  geom_jitter(aes(color = quality.discrete))
 
-p2 <- ggplot(aes(x = quality.descrete,
+p2 <- ggplot(aes(x = quality.discrete,
            y = alcohol),
        data = df) +
-  geom_boxplot(aes(color = quality.descrete))
+  geom_boxplot(aes(color = quality.discrete))
 
 
 grid.arrange(p1, p2, nrow = 1)
@@ -403,41 +395,17 @@ the points are clustered together at a high alcohol rating.  However, there is
 a very low N (only 5 observations in this category), and variability may 
 increase with more observations.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Scatterplot_Density_Quality}
-# Plot a scatterplot of quality vs density levels
-ggplot(aes(x = density,
-           y = quality),
-       data = df) +
-  geom_point() 
-```
-
-It looks like the 2 outliers with a density above 1.01 are making it more
-difficult to view the bulk of the data.  I will exclude these points and graph 
-the plot again.
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, Scatterplot_Density_Quality2}
-# Plot a scatterplot of quality vs density levels excluding 2 outliers
-ggplot(aes(x = density,
-           y = quality),
-       data = subset(df, df$density < 1.01)) +
-  geom_point(alpha = 0.1) +
-  stat_smooth(method = 'lm') 
-```
-
-Applying the linear model line on the data we can see that with increasing 
-density there is a decrease in quality.  
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, Boxplot_Density_Quality}
+```{r echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, Box_Dens_Qual}
 # Plot a boxplot of density and quality
-p3 <- ggplot(aes(x = quality.descrete,
+p3 <- ggplot(aes(x = quality.discrete,
            y = density),
        data = subset(df, df$density < 1.01)) +
-  geom_jitter(aes(color = quality.descrete))
+  geom_jitter(aes(color = quality.discrete))
 
-p4 <- ggplot(aes(x = quality.descrete,
+p4 <- ggplot(aes(x = quality.discrete,
            y = density),
        data = subset(df, df$density < 1.01)) +
-  geom_boxplot(aes(color = quality.descrete))
+  geom_boxplot(aes(color = quality.discrete))
 
 
 grid.arrange(p3, p4, nrow = 1)
@@ -516,20 +484,29 @@ groups, I chose the values manually as I was curious to play around with the
 numbers; however, I believe there is also a easy to cut them into 3 equal groups 
 automatically.
 
+For the colors chosen, I first experimented using the color scale brewer code
+using a sequential color scheme because the data is ordinal.  For all 3 color
+combinations (including that for the Blues which I wanted to use), the lightest
+color was too light and could barely be seen above the white or gray background
+of the plots.  Therefore, I went to the colorbrewer2.org website where I could 
+experiment with the color choices.  I used the 7-Class Blues and picked color
+3, 5 and 7, as I found these distinct enough from each other, yet the lightest
+color was still visible on the gray background.  These colors were then 
+manually added using scale_color_manual.  This method is used throughout this 
+section however I have used scale_color_brewer in the final plot section to
+illustrate that I know how to use it.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Alcohol_Density}
-# Plot a scatterplot of quality vs alcohol colored by density levels
-ggplot(aes(x = alcohol,
-           y = quality),
-       data = subset(df, df$density < 1.01)) +
-  geom_point(aes(color = density.bucket)) +
-  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
-  stat_smooth(method = 'lm')
+ggplot(aes(x = quality.discrete,
+           y = alcohol),
+       data = df) +
+  geom_jitter(aes(color = density.bucket)) +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
 ```
 
-Density appears to be more correlated to alcohol levels alone, opposed to 
-explaining the variability in this graph. Next, I will look at the residual 
-sugar level, which was highly correlated to density (which was moderately 
-correlated to quality).
+Density appears to be more correlated to alcohol levels alone. Next, I 
+will look at the residual sugar level, which was highly correlated to 
+density (which was moderately correlated to quality).
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Residual_Sugar__Bucket}
 # Create a new column bucketing the residual sugar levels
@@ -541,12 +518,11 @@ summary(df$residual.sugar.bucket)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Alcohol_Residual_Sugar}
 # Plot a scatterplot of quality vs alcohol colored by residual sugar levels
-ggplot(aes(x = alcohol,
-           y = quality),
-       data = subset(df, df$density < 1.01)) +
-  geom_point(aes(color = residual.sugar.bucket)) +
-  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
-  geom_smooth(method = 'lm')
+ggplot(aes(x = quality.discrete,
+           y = alcohol),
+       data = df) +
+  geom_jitter(aes(color = residual.sugar.bucket)) +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
 ```
 
 The different colored points (varied residual sugar levels) appear to be equally
@@ -614,16 +590,32 @@ poor model.
 
 Moving away from quality, would like to try and predict the density of wine 
 based on the alcohol levels, as well as additional parameters starting with 
-residual sugar.
+residual sugar.  For each variable I have graphed a plot with a single line 
+linear line over all the data (I find this is easier to look at all the points
+and see trends in the colors) as well as a linear line for each bucket being
+used to color the data (which can then show any differences in the relationship
+due to that parameter).
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Residual_Sugar}
+```{r echo=FALSE, fig.width = 11, message=FALSE, warning=FALSE, Den_Alc_Res_Sug}
 # Plot a scatterplot of density vs alcohol colored by residual sugar levels
-ggplot(aes(x = alcohol,
+p7 <- ggplot(aes(x = alcohol,
            y = density),
        data = subset(df, df$density < 1.01)) +
   geom_point(aes(color = residual.sugar.bucket)) +
-  stat_smooth(method = 'lm') +
-  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+  stat_smooth(method = 'lm', color = 'dark gray') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Residual\nSugar\nLevel")
+
+p8 <- ggplot(aes(x = alcohol,
+           y = density,
+           color = residual.sugar.bucket),
+       data = subset(df, df$density < 1.01)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Residual\nSugar\nLevel")
+
+grid.arrange(p7, p8, nrow = 1)
 ```
 
 Residual sugar appears to explain some of the variability in the density vs 
@@ -639,14 +631,26 @@ df$chlorides.bucket <- cut(df$chlorides,
 summary(df$chlorides.bucket)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Chlorides}
+```{r echo=FALSE, fig.width = 11, message=FALSE, warning=FALSE, Den_Alc_Chl}
 # Plot a scatterplot of density vs alcohol colored by chloride levels
-ggplot(aes(x = alcohol,
+p9 <- ggplot(aes(x = alcohol,
            y = density),
        data = subset(df, df$density < 1.01)) +
   geom_point(aes(color = chlorides.bucket)) +
-  stat_smooth(method = 'lm') +
-  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+  stat_smooth(method = 'lm', color = 'dark gray') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Chloride\nLevel")
+
+p10 <- ggplot(aes(x = alcohol,
+           y = density,
+           color = chlorides.bucket),
+       data = subset(df, df$density < 1.01)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Chloride\nLevel")
+
+grid.arrange(p9, p10, nrow = 1)
 ```
 
 Chlorides do not seem to explain the variability in the density vs alcohol plot 
@@ -660,14 +664,26 @@ df$free.sulfur.dioxide.bucket <- cut(df$free.sulfur.dioxide,
 summary(df$free.sulfur.dioxide.bucket)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Free_Sul_Diox}
+```{r echo=FALSE, fig.width = 11, message=FALSE, warning=FALSE, Den_Alc_FSD}
 # Plot a scatterplot of density vs alcohol colored by free sulfur dioxide levels
-ggplot(aes(x = alcohol,
+p11 <- ggplot(aes(x = alcohol,
            y = density),
        data = subset(df, df$density < 1.01)) +
   geom_point(aes(color = free.sulfur.dioxide.bucket)) +
-  stat_smooth(method = 'lm') +
-  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+  stat_smooth(method = 'lm', color = 'dark gray') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Free\nSulfur\nDioxide\nLevel")
+
+p12 <- ggplot(aes(x = alcohol,
+           y = density,
+           color = free.sulfur.dioxide.bucket),
+       data = subset(df, df$density < 1.01)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Free\nSulfur\nDioxide\nLevel")
+
+grid.arrange(p11, p12, nrow = 1)
 ```
 
 I do not observe any pattern when bucketing by free sulfur dioxide levels.
@@ -680,14 +696,26 @@ df$total.sulfur.dioxide.bucket <- cut(df$total.sulfur.dioxide,
 summary(df$total.sulfur.dioxide.bucket)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Total_Sul_Diox}
+```{r echo=FALSE, fig.width = 11, message=FALSE, warning=FALSE, Den_Alc_TSD}
 # Plot a scatterplot of density vs alcohol colored by total sulfur dioxide
-ggplot(aes(x = alcohol,
+p13 <- ggplot(aes(x = alcohol,
            y = density),
        data = subset(df, df$density < 1.01)) +
   geom_point(aes(color = total.sulfur.dioxide.bucket)) +
-  stat_smooth(method = 'lm') +
-  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+  stat_smooth(method = 'lm', color = 'dark gray') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Total\nSulfur\nDioxide\nLevel")
+
+p14 <- ggplot(aes(x = alcohol,
+           y = density,
+           color = total.sulfur.dioxide.bucket),
+       data = subset(df, df$density < 1.01)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Total\nSulfur\nDioxide\nLevel")
+
+grid.arrange(p13, p14, nrow = 1)
 ```
 
 It is difficult to say whether total sulfur dioxide levels explain the 
@@ -704,14 +732,26 @@ df$fixed.acidity.bucket <- cut(df$fixed.acidity,
 summary(df$fixed.acidity.bucket)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol_Fixed_Acidity}
+```{r echo=FALSE, fig.width = 11, message=FALSE, warning=FALSE, Den_Alc_Fix_Aci}
 # Plot a scatterplot of density vs alcohol colored by fixed acidity levels
-ggplot(aes(x = alcohol,
+p15 <- ggplot(aes(x = alcohol,
            y = density),
        data = subset(df, df$density < 1.01)) +
   geom_point(aes(color = fixed.acidity.bucket)) +
-  stat_smooth(method = 'lm') +
-  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594"))
+  stat_smooth(method = 'lm', color = 'dark gray') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Fixed\nAcidity\nLevel")
+
+p16 <- ggplot(aes(x = alcohol,
+           y = density,
+           color = fixed.acidity.bucket),
+       data = subset(df, df$density < 1.01)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  labs(col="Fixed\nAcidity\nLevel")
+
+grid.arrange(p15, p16, nrow = 1)
 ```
 
 Fixed acidity levels may explain some of the variability in the plot of density 
@@ -798,58 +838,74 @@ density that were not included in this dataset.
 # Final Plots and Summary
 
 ### Plot One
-```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
-# Plot a scatterplot of quality vs alcohol
-ggplot(aes(x = alcohol,
-           y = quality),
-       data = df) +
-  geom_point(alpha = 1/10) +
-  stat_smooth(method = 'lm') +
-  ggtitle('Quality Increases as Alcohol Levels Increase') +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  xlab("Alcohol Level (% by volume)") +
-  ylab("Quality Rating")
+```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE, P1}
+# Create a scatterplot matrix to investigate relationships between variables
+ggpairs(data=df[,c(1:12)], 
+        columnLabels = matrixlabels,
+        lower = list(continuous = wrap("points", 
+                                       alpha = 0.1,
+                                       size=0.5))) +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text.x = element_text(size = 8, angle = -90))
 ```
 
 ### Description One
-Firstly, I wanted variety in the appearance of my final plots so I chose this 
-one even though it may be unusual to graph a scatterplot when the quality 
-ratings are descrete.  I thought this graph was important because it represents 
-the strongest correlation between any variable and quality which ended up being 
-alcohol.
+This scatterplot matrix was an important jumping off point for the rest of the
+project.  Although it may be considered more of a preliminary graph, it showed
+the relationship between all variables, including the ones between quality and
+density which I delved into deeper for the remainder of the project.  The 
+size of the points was made smaller and transparent for better aesthetics.  
+I preferred removing the minor and major grid lines as it gave the plot a 
+cleaner look.  I changed the variable labels and rotated the values on the 
+y-axis so the text would not be cluttered.
 
 ### Plot Two
-```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Two}
-ggplot(aes(x = quality.descrete,
+```{r echo=FALSE, message=FALSE, warning=FALSE, P2}
+p17 <- ggplot(aes(x = quality.discrete,
+           y = alcohol),
+       data = df) +
+  geom_boxplot(aes(color = quality.discrete)) +
+  ggtitle('Alcohol Increases as Quality Increases') +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Quality Rating") +
+  ylab(expression(paste("Alcohol (% by volume)"))) + 
+  theme(legend.position="none")
+
+p18 <- ggplot(aes(x = quality.discrete,
            y = density),
        data = subset(df, df$density < 1.01)) +
-  geom_boxplot(aes(color = quality.descrete)) +
+  geom_boxplot(aes(color = quality.discrete)) +
   ggtitle('Density Decreases as Quality Increases') +
   theme(plot.title = element_text(hjust = 0.5)) +
   xlab("Quality Rating") +
   ylab(expression(paste("Density (g/cm"^3, ")"))) + 
   theme(legend.position="none")
+
+grid.arrange(p17, p18, nrow = 1)
 ```
 
 ### Description Two
-I chose this graph as it was a different way to represent the type of data shown
-in Plot 1.  The boxplot allows you to glean information such as the 5 number 
-summary, outliers, overlap between groups, and trends across quality ratings.  
+I chose this graph as it illustrates how alcohol and density (the only 2 
+variables that were correlated with quality) change with increasing quality.
+The boxplot allows you to glean information such as the 5 number summary, 
+outliers, overlap between groups, and trends across quality ratings.  
 
 ### Plot Three
-```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
+```{r echo=FALSE, message=FALSE, warning=FALSE, P3}
 # Plot a scatterplot of density vs alcohol colored by residual sugar levels
 ggplot(aes(x = alcohol,
-           y = density),
+           y = density,
+           color = residual.sugar.bucket),
        data = subset(df, df$density < 1.01)) +
-  geom_point(aes(color = residual.sugar.bucket)) +
-  stat_smooth(method = 'lm') +
-  scale_color_manual(values=c("#9ecae1", "#4292c6", "#084594")) +
+  geom_jitter(size = 1) +
+  geom_smooth(method = 'lm') +
+  scale_color_brewer(type='seq') +
   ggtitle('Residual Sugar Explains Variability of Density vs Alcohol Plot') +
   theme(plot.title = element_text(hjust = 0.5)) +
-  labs(x="Alcohol Level (% by volume)", 
-       y=expression(paste("Density (g/cm"^3, ")")), 
-       col="Residual Sugar Level")
+  labs(x = "Alcohol Level (% by volume)", 
+       y = expression(paste("Density (g/cm"^3, ")")), 
+       col = "Residual Sugar Level")
 ```
 
 ### Description Three
@@ -897,3 +953,4 @@ http://colorbrewer2.org/#type=sequential&scheme=Blues&n=7
 https://stackoverflow.com/questions/40675778/center-plot-title-in-ggplot2 
 https://stackoverflow.com/questions/35618260/removing-legend-ggplot-2-2
 http://www.rpubs.com/datascientiest/237448
+https://stackoverflow.com/questions/39709745/decreasing-the-line-thickness-and-corr-font-size-in-ggpairs-plot
